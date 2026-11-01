@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b1a4a"><link rel="apple-touch-icon" href="icon-192.png"><title>Planeta em Suas Mãos</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f7ee;--tx:#1e2a1c;--mut:#5f6f5a;--card:#fff;--bar:#dfe8d6;--acc:#3f9a3a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1710;--tx:#eaf5e4;--mut:#9db596;--card:#1a2a1b;--bar:#2c3f2a;--acc:#6fcf5a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1710;--tx:#eaf5e4;--mut:#9db596;--card:#1a2a1b;--bar:#2c3f2a;--acc:#6fcf5a;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:auto}
+#top{display:flex;align-items:center;gap:10px;padding:8px 12px}
+#hp{font-size:26px;font-weight:900}
+#msg{flex:1;font-size:12px;line-height:1.25}
+#coins{font-weight:800;background:#ffd93b;color:#3a2c00;border-radius:20px;padding:4px 12px;white-space:nowrap}
+#stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px 8px;font-size:11px;text-align:center}
+.bar{height:9px;background:var(--bar);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .4s}.bar i.low{background:#e0594a}
+#stage{flex:1;position:relative;overflow:hidden;margin:0 8px;border-radius:22px;transition:background 1s}
+#toast{position:absolute;top:8px;left:10px;right:10px;text-align:center;font-size:13px;background:#000b;color:#fff;border-radius:12px;padding:6px 10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}
+#toast.on{opacity:1}
+svg#sv{position:absolute;inset:0;width:100%;height:100%}
+#pl{animation:bob 4s ease-in-out infinite;transform-origin:150px 150px}
+@keyframes bob{50%{transform:translateY(-6px) scale(1.015)}}
+@keyframes hop{40%{transform:translateY(-18px) scale(1.04)}}
+.hop #pl{animation:hop .5s 2}
+.fx{position:fixed;font-weight:800;pointer-events:none;animation:up 1s forwards;z-index:60;text-shadow:0 1px 3px #0008;color:#fff}
+@keyframes up{to{transform:translateY(-50px);opacity:0}}
+#tray{display:flex;justify-content:center;gap:10px;padding:10px 12px 4px}
+.tool{background:var(--card);border-radius:16px;width:76px;padding:6px 0;text-align:center;font-size:11px;touch-action:none;cursor:grab;box-shadow:0 1px 4px #0003}
+.tool b{display:block;font-size:34px;font-weight:400}
+.btn{margin:2px auto 10px;background:var(--acc);color:#fff;border:0;border-radius:14px;padding:9px 16px;font-size:14px;font-weight:700}
+#hint{text-align:center;font-size:11px;color:var(--mut);padding:0 12px}
+.ghost{position:fixed;transform:translate(-50%,-50%);font-size:52px;pointer-events:none;z-index:50}
+#intro{position:fixed;inset:0;background:#000e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:28px;z-index:100;font-size:16px;line-height:1.45}
+#intro b{font-size:64px;font-weight:400}
+.bub{position:fixed;pointer-events:none;font-size:22px;animation:up 1.2s forwards;z-index:49}
+</style></head><body>
+<div id="app">
+ <div id="top"><div id="hp">0%</div><div id="msg"></div><div id="coins"></div></div>
+ <div id="stats"></div>
+ <div id="stage">
+  <div id="toast"></div>
+  <svg id="sv" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+   <defs>
+    <clipPath id="cp"><circle cx="150" cy="150" r="100"/></clipPath>
+    <radialGradient id="sh" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+    <radialGradient id="dm" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="#cfe9ff" stop-opacity=".35"/><stop offset="1" stop-color="#9ac8ff" stop-opacity=".05"/></radialGradient>
+   </defs>
+   <g id="stars" fill="#fff"></g>
+   <g id="pl">
+    <circle id="oc" cx="150" cy="150" r="100"/>
+    <g clip-path="url(#cp)">
+     <g id="land"><path d="M85 105Q110 80 140 95Q165 105 150 130Q135 150 105 145Q80 135 85 105Z"/><path d="M170 150Q200 130 225 150Q235 180 205 195Q175 190 170 150Z"/><path d="M95 185Q125 170 150 190Q145 220 115 222Q90 212 95 185Z"/><path d="M185 85Q215 80 225 105Q205 115 185 105Z"/></g>
+     <g id="trees" fill="#1f7a2c"></g>
+     <g id="oil" fill="#14100c"><ellipse cx="190" cy="120" rx="22" ry="12"/><ellipse cx="80" cy="165" rx="18" ry="10"/><ellipse cx="150" cy="225" rx="26" ry="11"/><ellipse cx="215" cy="215" rx="14" ry="8"/><ellipse cx="120" cy="70" rx="16" ry="8"/></g>
+     <g id="cl" fill="#fff"><ellipse cx="110" cy="85" rx="26" ry="8"/><ellipse cx="205" cy="165" rx="24" ry="7"/><ellipse cx="90" cy="210" rx="22" ry="7"/></g>
+     <g id="smog" fill="#4a4540"><ellipse cx="130" cy="110" rx="50" ry="20"/><ellipse cx="190" cy="195" rx="48" ry="18"/><ellipse cx="100" cy="190" rx="40" ry="16"/></g>
+     <g id="crk" fill="none" stroke="#ff6a1a" stroke-width="3" stroke-linecap="round"><path d="M70 100L110 130L100 170L140 190"/><path d="M200 90L180 140L220 170"/><path d="M120 230L150 190L190 215"/></g>
+    </g>
+    <circle cx="150" cy="150" r="100" fill="url(#sh)"/>
+    <g id="face">
+     <ellipse cx="120" cy="147" rx="14" ry="17" fill="#fff"/><ellipse cx="180" cy="147" rx="14" ry="17" fill="#fff"/>
+     <ellipse id="p1" cx="122" cy="150" rx="8" ry="10" fill="#1a2a3a"/><ellipse id="p2" cx="178" cy="150" rx="8" ry="10" fill="#1a2a3a"/>
+     <circle cx="125" cy="145" r="3.5" fill="#fff"/><circle cx="181" cy="145" r="3.5" fill="#fff"/>
+     <ellipse cx="100" cy="172" rx="10" ry="6" fill="#ff8a9a" opacity=".7"/><ellipse cx="200" cy="172" rx="10" ry="6" fill="#ff8a9a" opacity=".7"/>
+     <path id="mh" d="M132 175Q150 198 168 175" fill="none" stroke="#3a1a1a" stroke-width="4" stroke-linecap="round"/>
+     <path id="mn" d="M135 184H165" fill="none" stroke="#3a1a1a" stroke-width="4" stroke-linecap="round"/>
+     <path id="ms" d="M132 192Q150 174 168 192" fill="none" stroke="#3a1a1a" stroke-width="4" stroke-linecap="round"/>
+     <g id="br" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"><path d="M105 124L133 130"/><path d="M195 124L167 130"/></g>
+     <g id="tr" fill="#6ec8ff"><path d="M110 166q-6 12 0 16q6-4 0-16z"/><path d="M190 166q-6 12 0 16q6-4 0-16z"/></g>
+    </g>
+    <g id="fac" font-size="28" text-anchor="middle"></g>
+   </g>
+   <circle cx="150" cy="150" r="138" fill="url(#dm)" stroke="#bfe0ff" stroke-opacity=".5" stroke-width="3"/>
+   <path d="M60 80A112 112 0 0 1 120 38" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/>
+   <g id="an" font-size="24" text-anchor="middle"></g>
+  </svg>
+ </div>
+ <div id="tray"></div>
+ <div id="hint"></div>
+ <button class="btn" id="rain">🌧️ Chuva mágica (25 🪙)</button>
+ <div id="intro" style="display:none"><b>🌍💔</b><div>O planeta foi destruído: cinzas, óleo no mar, fábricas e fumaça por toda parte.<br><br>Mas ele ainda está vivo, e só você pode curá-lo.<br>Plante, limpe, proteja e veja o planeta renascer 💚</div><button class="btn" id="go">Começar a salvar o planeta</button></div>
+</div>
+<script>
+const $=s=>document.querySelector(s),KEY="planetaMaos2";
+let S={c:30,fo:4,oc:4,ai:4,an:4,t:Date.now(),d:"",st:0,m:0,i:0};
+const MS=[[20,"🌱 O primeiro sinal de vida! Continue!",5],[40,"🌿 O planeta está se recuperando!",10],[60,"🌳 O verde está voltando!",15],[80,"🌈 Quase lá! O planeta sorri de novo!",20],[100,"🌍 PLANETA TOTALMENTE RESTAURADO! Você o salvou! 💚",50]];
+function confetti(){const r=$("#stage").getBoundingClientRect();for(let i=0;i<10;i++){const t=document.createElement("div");t.className="fx";t.textContent=["🌱","🌸","✨","🦋","💚"][i%5];t.style.left=r.left+Math.random()*r.width+"px";t.style.top=r.top+r.height*.3+Math.random()*r.height*.5+"px";t.style.fontSize="28px";document.body.append(t);setTimeout(()=>t.remove(),1000)}}
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(x){}
+const cl=v=>Math.max(0,Math.min(100,v)),save=()=>{S.t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}};
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return"rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t/100)).join(",")+")"};
+const NS="http://www.w3.org/2000/svg";
+const FACTS=["Árvores absorvem CO₂ e liberam oxigênio 🌳","Plástico no mar ameaça tartarugas e baleias 🐢","Energia solar e eólica não poluem o ar ⚡","Proteger florestas protege a casa dos animais 🦜","Pequenas ações, repetidas por todos, mudam o mundo 🌍"];
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.append(e);return e}
+// estrelas e árvores fixas
+for(let i=0;i<30;i++)el("circle",{cx:Math.random()*300,cy:Math.random()*300,r:Math.random()*1.4+.3,opacity:Math.random()*.7+.2},$("#stars"));
+const TP=[[100,100],[125,112],[140,100],[110,130],[210,160],[195,175],[220,185],[185,160],[110,200],[130,205],[105,190],[200,95],[215,100],[95,115]];
+const trees=TP.map(p=>el("circle",{cx:p[0],cy:p[1],r:6},$("#trees")));
+const FAC=[[95,125,70],[205,200,50],[130,215,30]];
+const facs=FAC.map((f,i)=>{const t=el("text",{x:f[0],y:f[1]},$("#fac"));t.textContent="🏭";t.style.cursor="pointer";t.onpointerdown=e=>{e.stopPropagation();S.ai=cl(S.ai+10);fx("+ ar limpo 🌬️",e.clientX,e.clientY);reward(1,e);toast("Fábrica desligada! Energia limpa ajuda o ar ⚡");ui()};return t});
+const ANI=["🐦","🐋","🐢","🦋"],ani=ANI.map(a=>{const t=el("text",{},$("#an"));t.textContent=a;return t});
+function fx(t,x,y){const e=document.createElement("div");e.className="fx";e.textContent=t;e.style.left=x+"px";e.style.top=y+"px";document.body.append(e);setTimeout(()=>e.remove(),1000)}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2800)}
+function hop(){const s=$("#stage");s.classList.remove("hop");void s.offsetWidth;s.classList.add("hop")}
+function reward(c,e){S.c+=c;if(e&&c)fx("+"+c+" 🪙",e.clientX,e.clientY-30);save()}
+const H=()=>(S.fo+S.oc+S.ai+S.an)/4;
+function ui(){
+ const h=H(),r=Math.round(h);$("#hp").textContent=r+"%";
+ $("#coins").textContent="🪙 "+Math.floor(S.c);
+ $("#msg").textContent=h>=95?"Estou RENASCIDO! Obrigado, herói! 🌈":h>=80?"Estou radiante! Obrigado! 🌈":h>=55?"Estou melhorando, continue! 🙂":h>=30?"Ainda estou doente... mas sinto esperança 🥺":h>=12?"Por favor, me ajude... 😢":"Estou destruído... mas você pode me salvar 💔";
+ $("#crk").setAttribute("opacity",Math.max(0,(30-h)/30));
+ for(const m of MS){if(h>=m[0]&&S.m<m[0]){S.m=m[0];S.c+=m[2];toast(m[1]+" +"+m[2]+" 🪙");hop();confetti();save()}}
+ $("#stats").innerHTML=[["🌳","fo"],["🌊","oc"],["💨","ai"],["🐋","an"]].map(([i,k])=>`<div>${i}<div class="bar"><i class="${S[k]<30?"low":""}" style="width:${S[k]}%"></i></div></div>`).join("");
+ $("#oc").setAttribute("fill",mix("#6a5b45","#2fa8ff",S.oc));
+ $("#land").setAttribute("fill",mix("#8c8576","#46c24f",S.fo));
+ trees.forEach((t,i)=>t.setAttribute("opacity",S.fo>(i+1)*7?1:0));
+ $("#oil").setAttribute("opacity",(100-S.oc)/100*.9);
+ $("#cl").setAttribute("opacity",Math.max(0,(S.ai-40)/60));
+ $("#smog").setAttribute("opacity",Math.max(0,(70-S.ai)/70)*.85);
+ facs.forEach((f,i)=>f.style.display=S.ai<FAC[i][2]?"":"none");
+ $("#stage").style.background="radial-gradient(circle at 50% 45%,"+mix("#4a3a2a","#1c3a8a",S.ai)+","+mix("#120c08","#050a24",S.ai)+" 75%)";
+ const s=h>=60?0:h>=30?1:2;
+ $("#mh").style.display=h>=55?"":"none";$("#mn").style.display=h>=30&&h<55?"":"none";$("#ms").style.display=h<30?"":"none";
+ $("#br").style.display=h<45?"":"none";$("#tr").style.display=h<30?"":"none";
+ const dy=h<30?4:0;$("#p1").setAttribute("cy",150+dy);$("#p2").setAttribute("cy",150+dy);
+}
+function decay(m){m*=H()<25?.35:1;S.fo=cl(S.fo-m*.5);S.oc=cl(S.oc-m*.5);S.ai=cl(S.ai-m*.6);S.an=cl(S.an-m*.4)}
+function drag(e,emoji,onMove,onUp){
+ e.preventDefault();const g=document.createElement("div");g.className="ghost";g.textContent=emoji;document.body.append(g);
+ const mv=ev=>{g.style.left=ev.clientX+"px";g.style.top=ev.clientY+"px";onMove&&onMove(ev)};
+ const up=ev=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);removeEventListener("pointercancel",up);g.remove();onUp&&onUp(ev)};
+ addEventListener("pointermove",mv);addEventListener("pointerup",up);addEventListener("pointercancel",up);mv(e)}
+const over=ev=>{const r=$("#oc").getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;return Math.hypot(ev.clientX-cx,ev.clientY-cy)<r.width/2+10};
+const TOOLS=[["🌱","Plantar"],["🧽","Limpar mar"],["🐟","Alimentar"]];
+$("#tray").innerHTML=TOOLS.map((t,i)=>`<div class="tool" data-i="${i}"><b>${t[0]}</b>${t[1]}</div>`).join("");
+$("#hint").textContent="Arraste as ferramentas até o planeta · Toque nas fábricas · Faça carinho no Planeta";
+document.querySelectorAll(".tool").forEach(el=>el.onpointerdown=e=>{
+ const i=+el.dataset.i;
+ if(i==0)drag(e,"🌱",null,ev=>{if(!over(ev))return;S.fo=cl(S.fo+12);fx("🌳",ev.clientX,ev.clientY);hop();reward(1,ev);toast(FACTS[0]);ui()});
+ if(i==2)drag(e,"🐟",null,ev=>{if(!over(ev))return;S.an=cl(S.an+12);fx("🐋💙",ev.clientX,ev.clientY);hop();reward(1,ev);toast(FACTS[3]);ui()});
+ if(i==1){let lx=e.clientX,ly=e.clientY,acc=0,done=S.oc>=100;
+  drag(e,"🧽",ev=>{const d=Math.hypot(ev.clientX-lx,ev.clientY-ly);lx=ev.clientX;ly=ev.clientY;
+   if(over(ev)){S.oc=cl(S.oc+d/20);acc+=d;if(acc>45){acc=0;const b=document.createElement("div");b.className="bub";b.textContent="🫧";b.style.left=ev.clientX+(Math.random()*40-20)+"px";b.style.top=ev.clientY+"px";document.body.append(b);setTimeout(()=>b.remove(),1200)}
+    ui();if(S.oc>=100&&!done){done=true;reward(3,ev);hop();toast(FACTS[1])}}},()=>save())}
+});
+$("#pl").onpointerdown=e=>{S.an=cl(S.an+1);hop();fx("💚",e.clientX,e.clientY);ui()};
+$("#rain").onclick=()=>{if(S.c<25)return toast("Faltam moedas! Cuide do planeta para ganhar 🪙");S.c-=25;["fo","oc","ai","an"].forEach(k=>S[k]=cl(S[k]+15));hop();toast("🌧️ A chuva mágica renovou o planeta!");ui();save()};
+// animação orbital
+let T=0;function loop(){T+=.012;const n=Math.ceil(S.an/25);
+ ani.forEach((a,i)=>{const ang=T*(1+i*.15)+i*1.6,x=150+Math.cos(ang)*(120+i*5),y=150+Math.sin(ang)*(42+i*10)+(i%2?18:-18);
+  a.setAttribute("x",x);a.setAttribute("y",y);a.style.opacity=i<n?1:0;a.style.filter=S.an<35?"grayscale(1)":"none"});
+ requestAnimationFrame(loop)}
+// início
+const away=Math.min(600,(Date.now()-S.t)/6e4);if(away>1)decay(away);
+const today=new Date().toDateString();let welcome="";
+if(S.d!=today){const y=new Date(Date.now()-864e5).toDateString();S.st=S.d==y?S.st+1:1;S.d=today;S.c+=10;welcome="🎁 Dia "+S.st+" cuidando do planeta! +10 moedas"}
+else if(away>30)welcome="O planeta sentiu sua falta... veja como ele está 🥺";
+ui();loop();save();
+if(!S.i){$("#intro").style.display="flex";$("#go").onclick=()=>{S.i=1;$("#intro").style.display="none";save();toast("Comece arrastando 🌱 até o planeta!")}}else if(welcome)setTimeout(()=>toast(welcome),500);
+setInterval(()=>{decay(5/60);ui();save()},5000);
+addEventListener("pagehide",save);
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
